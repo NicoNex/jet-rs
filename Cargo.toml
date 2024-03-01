@@ -1,0 +1,11 @@
+[package]
+name = "jet-rs"
+version = "0.1.0"
+edition = "2021"
+description = "jet - Just Edit Text.\nJet allows you to replace all the substrings matched by a specified regex in one or more files.\nIf it is given a directory as input, it will recursively replace all the matches in the files of the directory tree."
+
+[dependencies]
+walkdir = "2"
+glob = "0.3.1"
+regex = "1"
+clap = { version = "4.5.1", features = ["derive"] }
