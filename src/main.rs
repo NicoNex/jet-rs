@@ -2,7 +2,7 @@ use clap::Parser;
 use glob::Pattern;
 use regex::Regex;
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::{self, Read, Write};
 use walkdir::{DirEntry, WalkDir};
 
 #[derive(Parser, Debug)]
@@ -73,11 +73,27 @@ fn process_file(
     }
 }
 
+fn process_stdin(re: &regex::Regex, replacement: &String) {
+    let mut cnt = String::new();
+    let mut stdin = io::stdin();
+
+    if let Err(err) = stdin.read_to_string(&mut cnt) {
+        eprintln!("error: failed to read stdin: {}", err);
+        return;
+    }
+    print!("{}", re.replace_all(&cnt, replacement));
+}
+
 fn main() {
     let opts = Options::parse();
-    let walker = WalkDir::new(String::from(opts.path)).into_iter();
-    let pattern = Pattern::new(opts.glob.as_deref().unwrap_or("*")).expect("Invalid glob pattern");
     let re = Regex::new(opts.pattern.as_str()).unwrap();
+
+    if opts.path == "-" {
+        return process_stdin(&re, &opts.replacement);
+    }
+
+    let pattern = Pattern::new(opts.glob.as_deref().unwrap_or("*")).expect("Invalid glob pattern");
+    let walker = WalkDir::new(String::from(opts.path)).into_iter();
 
     walker
         .filter_entry(|e| is_hidden(e) || !opts.include_hidden)
