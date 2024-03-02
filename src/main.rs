@@ -48,7 +48,9 @@ fn process_file(
     if let Ok(mut file) = File::open(&path) {
         let mut cnt = String::new();
         if let Err(err) = file.read_to_string(&mut cnt) {
-            eprintln!("error: failed to read file {:?}: {}", path, err);
+            if verbose {
+                eprintln!("error: failed to read file {:?}: {}", path, err);
+            }
             return;
         }
 
