@@ -1,5 +1,6 @@
 use clap::Parser;
 use glob::Pattern;
+use rayon::prelude::*;
 use regex::Regex;
 use std::fs::File;
 use std::io::{self, Read, Write};
@@ -102,9 +103,7 @@ fn main() {
         .filter_map(Result::ok)
         .filter(|e| pattern.matches(e.path().to_string_lossy().as_ref()))
         .filter(|e| opts.depth < 0 || e.depth() <= opts.depth as usize)
-        .for_each(|e| {
-            if !e.path().is_dir() {
-                process_file(e, &re, &opts.replacement, opts.verbose, opts.to_stdout);
-            }
-        });
+        .filter(|e| !e.path().is_dir())
+        .par_bridge()
+        .for_each(|e| process_file(e, &re, &opts.replacement, opts.verbose, opts.to_stdout));
 }
